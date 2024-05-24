@@ -6,7 +6,7 @@ pi zero w + rust + hdmi output + some buttons => game console
 
 macroquad-like api (global state)
 
-# installation
+## installation
 
 submodule this repo into your project
 
@@ -14,11 +14,11 @@ submodule this repo into your project
 git submodule add https://github.com/circles-png/pigame
 ```
 
-# usage
+## usage
 
-set up env
+set up env then read docs with `cargo doc --open` 
 
-## setup part I - deploy script
+### setup part I - deploy script
 
 make a `deploy.sh` file in the root of your project with the following contents
 
@@ -36,7 +36,7 @@ ssh -t pi@raspberrypi.local "RUST_BACKTRACE=1 ~/<binary name>"
 
 where `<binary name>` is the name of the binary you want to deploy
 
-## setup part II - build config
+### setup part II - build config
 
 make a `.cargo/config.toml` file in the root of your project with the following contents
 
