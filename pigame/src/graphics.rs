@@ -221,6 +221,11 @@ pub fn get_time() -> f64 {
     get().start_time.elapsed().as_secs_f64()
 }
 
+/// Wait until the next frame and update the screen.
+///
+/// # Errors
+///
+/// If the `ioctl` call fails when waiting for the next frame, an error is returned.
 #[allow(clippy::significant_drop_tightening)]
 pub fn next_frame() -> Result<()> {
     let context = get();

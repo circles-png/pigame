@@ -8,7 +8,7 @@ use crate::{
     graphics::{colour::BLACK, FrameBuffer},
 };
 
-static mut CONTEXT: Lazy<Context> = Lazy::new(|| Context::new().unwrap());
+static mut CONTEXT: Lazy<Context> = Lazy::new(|| unsafe { Context::new().unwrap_unchecked() });
 
 pub(crate) struct Context {
     pub frame_buffer: FrameBuffer,

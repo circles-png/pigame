@@ -16,7 +16,7 @@ git submodule add https://github.com/circles-png/pigame
 
 ## usage
 
-set up env then read docs with `cargo doc --open` 
+set up env then read docs with `cargo doc --open`
 
 ### setup part I - deploy script
 
