@@ -1,0 +1,16 @@
+[package]
+name = "breakout"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.83"
+pigame = { path = "../pigame" }
+
+[[bin]]
+name = "breakout"
+path = "src/main.rs"
+
+[[bin]]
+name = "input_test"
+path = "src/input_test.rs"
