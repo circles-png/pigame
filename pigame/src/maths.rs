@@ -1,19 +1,28 @@
 pub use glam;
 use glam::Vec2;
+
+/// 2D rectangle
 #[derive(Debug, Clone, Copy)]
 pub struct Rect {
+    /// X coordinate
     pub x: f32,
+    /// Y coordinate
     pub y: f32,
+    /// Width
     pub w: f32,
+    /// Height
     pub h: f32,
 }
 
 impl Rect {
+    /// Create a new rectangle
     #[must_use]
     pub const fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
         Self { x, y, w, h }
     }
 
+    /// Intersect two rectangles. Returns `None` if they do not intersect. Otherwise, returns the
+    /// rectangle that is the intersection of the two.
     #[must_use]
     pub fn intersect(self, other: Self) -> Option<Self> {
         let x1 = self.x;
@@ -35,8 +44,9 @@ impl Rect {
         }
     }
 
+    /// Return the centre of the rectangle.
     #[must_use]
-    pub fn center(self) -> Vec2 {
+    pub fn centre(self) -> Vec2 {
         Vec2::new(self.x + self.w / 2., self.y + self.h / 2.)
     }
 }

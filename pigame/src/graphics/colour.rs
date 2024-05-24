@@ -1,28 +1,36 @@
 use std::{fmt::Display, ops::Mul};
 
+/// A colour struct with red, green, and blue components
 #[derive(Debug, Clone, Copy)]
 pub struct Colour {
+    /// Red component; 0-255 inclusive
     pub red: u8,
+    /// Green component; 0-255 inclusive
     pub green: u8,
+    /// Blue component; 0-255 inclusive
     pub blue: u8,
 }
 
+/// Create a new colour with the given red, green, and blue components
 #[must_use]
 pub const fn colour(red: u8, green: u8, blue: u8) -> Colour {
     Colour::new(red, green, blue)
 }
 
 impl Colour {
+    /// Create a new colour with the given red, green, and blue components
     #[must_use]
     pub const fn new(red: u8, green: u8, blue: u8) -> Self {
         Self { red, green, blue }
     }
 
+    /// Convert the colour to a hex string (e.g. "#FF0000")
     #[must_use]
     pub fn to_hex(self) -> String {
         format!("#{:02X}{:02X}{:02X}", self.red, self.green, self.blue)
     }
 
+    /// Create a colour from a hex string (e.g. "#FF0000" or "FF0000")
     #[must_use]
     pub fn from_hex(hex: &str) -> Option<Self> {
         let hex = hex.trim_start_matches('#');
@@ -90,10 +98,17 @@ impl Mul<f32> for Colour {
     }
 }
 
-pub const RED: Colour = colour(255, 0, 0);
-pub const BLUE: Colour = colour(0, 0, 255);
-pub const ORANGE: Colour = colour(255, 165, 0);
-pub const GREEN: Colour = colour(0, 255, 0);
-pub const YELLOW: Colour = colour(255, 255, 0);
-pub const WHITE: Colour = colour(255, 255, 255);
-pub const BLACK: Colour = colour(0, 0, 0);
+#[allow(missing_docs)]
+mod consts {
+    use super::{colour, Colour};
+
+    pub const RED: Colour = colour(255, 0, 0);
+    pub const BLUE: Colour = colour(0, 0, 255);
+    pub const ORANGE: Colour = colour(255, 165, 0);
+    pub const GREEN: Colour = colour(0, 255, 0);
+    pub const YELLOW: Colour = colour(255, 255, 0);
+    pub const WHITE: Colour = colour(255, 255, 255);
+    pub const BLACK: Colour = colour(0, 0, 0);
+}
+
+pub use consts::*;

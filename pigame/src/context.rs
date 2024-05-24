@@ -10,15 +10,16 @@ use crate::{
 
 static mut CONTEXT: Lazy<Context> = Lazy::new(|| unsafe { Context::new().unwrap_unchecked() });
 
+
 pub(crate) struct Context {
-    pub frame_buffer: FrameBuffer,
-    pub start_time: Instant,
-    pub fonts: Vec<Font>,
-    pub last_frame: Instant,
+    pub(crate) frame_buffer: FrameBuffer,
+    pub(crate) start_time: Instant,
+    pub(crate) fonts: Vec<Font>,
+    pub(crate) last_frame: Instant,
 }
 
 impl Context {
-    pub fn new() -> Result<Self> {
+    pub(crate) fn new() -> Result<Self> {
         Ok(Self {
             frame_buffer: FrameBuffer::new()?,
             start_time: Instant::now(),

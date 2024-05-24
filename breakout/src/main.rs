@@ -1,7 +1,7 @@
 #![allow(clippy::cast_precision_loss)]
 
 use anyhow::Result;
-use pigame::graphics::text::{draw_text_ex, load_ttf_font, Params};
+use pigame::graphics::text::{draw_text_ex, load_ttf_font, Properties};
 use pigame::graphics::{
     clear_background, draw_rectangle, get_frame_time, get_time, next_frame, screen_height,
     screen_width,
@@ -174,8 +174,8 @@ fn resolve_collision(a: &mut Rect, vel: &mut Vec2, b: &Rect) -> bool {
         return false;
     };
 
-    let a_center = a.center();
-    let b_center = b.center();
+    let a_center = a.centre();
+    let b_center = b.centre();
     let to = b_center - a_center;
     let to_signum = to.signum();
     if intersection.w > intersection.h {
@@ -332,7 +332,7 @@ fn main() -> Result<()> {
 
         let score_text = format!("{score:0>#3}");
         let lives_text = format!("{player_lives}");
-        let text_params = &Params {
+        let text_params = &Properties {
             font,
             scale: 1.,
             rotation: 0.,

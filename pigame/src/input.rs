@@ -6,11 +6,14 @@ use strum::EnumCount;
 
 macro_rules! impl_input {
     ($($name:ident => $pin:expr,)*) => {
+        /// Return true if the input is active.
         #[must_use]
         pub fn is_active(input: Input) -> bool {
             Button::new_with_pulldown(Input::GPIO_MAP[input]).is_active()
         }
 
+        /// Return the first active input.
+        #[allow(missing_docs)]
         #[derive(Debug, EnumCount, VariantArray, Copy, Clone)]
         pub enum Input {
             $($name,)*
@@ -25,7 +28,8 @@ macro_rules! impl_input {
         }
 
         impl Input {
-            pub const GPIO_MAP: [u8; Input::COUNT] = [$($pin,)*];
+            pub(crate) const GPIO_MAP: [u8; Input::COUNT] = [$($pin,)*];
+            /// All inputs.
             pub const ALL: &'static [Input] = Self::VARIANTS;
         }
     };

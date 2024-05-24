@@ -1,4 +1,6 @@
+/// Colour abstractions and functions.
 pub mod colour;
+/// Text rendering functions.
 pub mod text;
 
 use crate::context::get;
@@ -41,44 +43,44 @@ pub(crate) enum KdMode {
 
 #[repr(C)]
 #[derive(Clone, Debug)]
-pub struct Bitfield {
-    pub offset: u32,
-    pub length: u32,
-    pub msb_right: u32,
+pub(crate) struct Bitfield {
+    pub(crate) offset: u32,
+    pub(crate) length: u32,
+    pub(crate) msb_right: u32,
 }
 
 #[repr(C)]
 #[derive(Clone, Debug)]
-pub struct VarScreeninfo {
-    pub xres: u32,
-    pub yres: u32,
-    pub xres_virtual: u32,
-    pub yres_virtual: u32,
-    pub xoffset: u32,
-    pub yoffset: u32,
-    pub bits_per_pixel: u32,
-    pub grayscale: u32,
-    pub red: Bitfield,
-    pub green: Bitfield,
-    pub blue: Bitfield,
-    pub transp: Bitfield,
-    pub nonstd: u32,
-    pub activate: u32,
-    pub height: u32,
-    pub width: u32,
-    pub accel_flags: u32,
-    pub pixclock: u32,
-    pub left_margin: u32,
-    pub right_margin: u32,
-    pub upper_margin: u32,
-    pub lower_margin: u32,
-    pub hsync_len: u32,
-    pub vsync_len: u32,
-    pub sync: u32,
-    pub vmode: u32,
-    pub rotate: u32,
-    pub colorspace: u32,
-    pub reserved: [u32; 4],
+pub(crate) struct VarScreeninfo {
+    pub(crate) xres: u32,
+    pub(crate) yres: u32,
+    pub(crate) xres_virtual: u32,
+    pub(crate) yres_virtual: u32,
+    pub(crate) xoffset: u32,
+    pub(crate) yoffset: u32,
+    pub(crate) bits_per_pixel: u32,
+    pub(crate) grayscale: u32,
+    pub(crate) red: Bitfield,
+    pub(crate) green: Bitfield,
+    pub(crate) blue: Bitfield,
+    pub(crate) transp: Bitfield,
+    pub(crate) nonstd: u32,
+    pub(crate) activate: u32,
+    pub(crate) height: u32,
+    pub(crate) width: u32,
+    pub(crate) accel_flags: u32,
+    pub(crate) pixclock: u32,
+    pub(crate) left_margin: u32,
+    pub(crate) right_margin: u32,
+    pub(crate) upper_margin: u32,
+    pub(crate) lower_margin: u32,
+    pub(crate) hsync_len: u32,
+    pub(crate) vsync_len: u32,
+    pub(crate) sync: u32,
+    pub(crate) vmode: u32,
+    pub(crate) rotate: u32,
+    pub(crate) colorspace: u32,
+    pub(crate) reserved: [u32; 4],
 }
 
 #[repr(C)]
@@ -102,7 +104,7 @@ pub(crate) struct FixScreeninfo {
 }
 
 impl FrameBuffer {
-    pub fn new() -> Result<Self> {
+    pub(crate) fn new() -> Result<Self> {
         let file = OpenOptions::new()
             .read(true)
             .write(true)
@@ -155,7 +157,7 @@ impl FrameBuffer {
         })
     }
 
-    pub fn draw_bitmap(&mut self, bitmap: &[[u8; 3]]) {
+    pub(crate) fn draw_bitmap(&mut self, bitmap: &[[u8; 3]]) {
         assert_eq!(bitmap.len(), (self.fixed_info.smem_len / 4) as usize);
         let bitmap: Vec<_> = bitmap
             .iter()
@@ -165,11 +167,11 @@ impl FrameBuffer {
     }
 
     #[must_use]
-    pub const fn screen_size(&self) -> (u32, u32) {
+    pub(crate) const fn screen_size(&self) -> (u32, u32) {
         (self.variable_info.xres, self.variable_info.yres)
     }
 
-    pub fn wait_until_vsync(&self) -> Result<()> {
+    pub(crate) fn wait_until_vsync(&self) -> Result<()> {
         let mut dummy = 0;
         if unsafe {
             ioctl(
@@ -185,18 +187,19 @@ impl FrameBuffer {
     }
 }
 
-#[allow(clippy::cast_precision_loss)]
+/// Get the width of the screen.
 #[must_use]
 pub fn screen_width() -> u32 {
     get().frame_buffer.screen_size().0
 }
 
-#[allow(clippy::cast_precision_loss)]
+/// Get the height of the screen.
 #[must_use]
 pub fn screen_height() -> u32 {
     get().frame_buffer.screen_size().1
 }
 
+/// Draw a rectangle on the screen.
 pub fn draw_rectangle(x: u32, y: u32, w: u32, h: u32, colour: Colour) {
     let frame_buffer = &mut get().frame_buffer;
     for x in x..x + w {
@@ -210,12 +213,14 @@ pub fn draw_rectangle(x: u32, y: u32, w: u32, h: u32, colour: Colour) {
     }
 }
 
+/// Clear the screen to a colour.
 pub fn clear_background(colour: Colour) {
     let frame_buffer = &mut get().frame_buffer;
     frame_buffer
         .draw_bitmap(&[colour.into()].repeat((frame_buffer.fixed_info.smem_len / 4) as usize));
 }
 
+/// Get the time since the program started.
 #[must_use]
 pub fn get_time() -> f64 {
     get().start_time.elapsed().as_secs_f64()
@@ -236,6 +241,7 @@ pub fn next_frame() -> Result<()> {
     Ok(())
 }
 
+/// Get the time since the last frame.
 #[must_use]
 pub fn get_frame_time() -> Duration {
     get().last_frame.elapsed()
