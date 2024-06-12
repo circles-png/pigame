@@ -145,15 +145,6 @@ impl FrameBuffer {
         })
     }
 
-    pub(crate) fn draw_bitmap(&mut self, bitmap: &[[u8; 3]]) {
-        assert_eq!(bitmap.len(), (self.fixed_info.smem_len / 4) as usize);
-        let bitmap: Vec<_> = bitmap
-            .iter()
-            .flat_map(|[red, green, blue]| [*blue, *green, *red, 0].into_iter())
-            .collect();
-        self.buffer.copy_from_slice(&bitmap);
-    }
-
     #[must_use]
     pub(crate) const fn screen_size(&self) -> (u32, u32) {
         (self.variable_info.xres, self.variable_info.yres)
@@ -225,6 +216,7 @@ pub fn next_frame() -> Result<()> {
     let frame_buffer = &mut context.frame_buffer;
     frame_buffer.wait_until_vsync()?;
     frame_buffer.map.copy_from_slice(&frame_buffer.buffer);
+    info!("fps: {}", 1. / get_frame_time().as_secs_f64());
     Ok(())
 }
 

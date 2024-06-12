@@ -4,7 +4,7 @@ pub use fontdue::{Font, FontSettings};
 
 use crate::{context::get, error::Error};
 
-use super::colour::{Colour, WHITE};
+use super::colour::Colour;
 
 /// Load a ttf font and return the index of the font in the internal font list.
 ///
@@ -19,44 +19,25 @@ pub fn load_ttf_font<P: AsRef<Path>>(path: P, settings: FontSettings) -> Result<
 
 /// Draw text to the screen at the specified position.
 #[allow(unused_variables)]
-pub fn draw_text_ex(text: &str, x: u32, y: u32, params: &Properties) {
-}
-
-/// Properties for drawing text.
-#[derive(Debug, Clone, Copy)]
-pub struct Properties {
-    /// The font to use; index of internal font list.
-    pub font: usize,
-    /// The scale of the text.
-    pub scale: f32,
-    /// The rotation of the text in radians.
-    pub rotation: f32,
-    /// The colour of the text.
-    pub colour: Colour,
-}
-
-impl Default for Properties {
-    /// Returns the "default properties".
-    ///
-    /// It uses the Quinque Five font, a scale of 1, white colour, and no rotation.
-    fn default() -> Self {
-        Self {
-            font: {
-                let settings = FontSettings {
-                    scale: 40.,
-                    ..Default::default()
-                };
-                let fonts = &mut get().fonts;
-                fonts.push(unsafe {
-                    Font::from_bytes(include_bytes!("Quinque Five Font.ttf").as_slice(), settings)
-                        .map_err(Error::Font)
-                        .unwrap_unchecked()
-                });
-                fonts.len() - 1
-            },
-            scale: 1.,
-            colour: WHITE,
-            rotation: 0.0,
+pub fn draw_text_ex(text: &str, x: u32, y: u32, font: usize, size: f32, colour: Colour) {
+    let font = &get().fonts[font];
+    let frame_buffer = &mut get().frame_buffer;
+    for char in text.chars() {
+        let (metrics, raster) = font.rasterize(char, font.scale_factor(size));
+        let rows = raster.chunks_exact(metrics.width);
+        for (dy, row) in rows.enumerate() {
+            for (dx, pixel) in row.iter().enumerate() {
+                let start = ((y as usize + dy) * frame_buffer.variable_info.xres as usize
+                    + x as usize
+                    + dx)
+                    * 4;
+                let slice = frame_buffer.buffer.get_mut(start..start + 4);
+                if let Some(slice) = slice {
+                    slice.copy_from_slice(&(colour * ((f32::from(*pixel)) / 255.)).to_bgra_bytes());
+                } else {
+                    break;
+                }
+            }
         }
     }
 }

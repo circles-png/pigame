@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use env_logger::init;
-use pigame::graphics::text::{draw_text_ex, load_ttf_font, Properties};
+use pigame::graphics::text::{draw_text_ex, load_ttf_font};
 use pigame::graphics::{
     clear_background, draw_rectangle, get_frame_time, get_time, next_frame, screen_height,
     screen_width,
@@ -223,13 +223,7 @@ fn init_blocks(blocks: &mut Vec<Block>) {
 #[allow(clippy::too_many_lines)]
 fn main() -> Result<()> {
     init();
-    let font = load_ttf_font(
-        "res/Quinque Five Font.ttf",
-        FontSettings {
-            scale: 30.,
-            ..Default::default()
-        },
-    )?;
+    let font = load_ttf_font("res/Quinque Five Font.ttf", FontSettings::default())?;
     let mut score = 0;
     let mut hits = 0;
     let mut player = Player::new();
@@ -333,21 +327,15 @@ fn main() -> Result<()> {
 
         let score_text = format!("{score:0>#3}");
         let lives_text = format!("{player_lives}");
-        let text_params = &Properties {
-            font,
-            scale: 1.,
-            rotation: 0.,
-            colour: WHITE,
-        };
         #[allow(clippy::cast_possible_truncation)]
         if ((get_time() * 6.) as i32 % 2 == 0) && !player.dead {
-            draw_text_ex(&score_text, 60, 40, text_params);
+            draw_text_ex(&score_text, 60, 40, font, 50000., WHITE);
         }
         if player.dead {
             player.rect.y = screen_height() as f32 + 10.;
-            draw_text_ex(&score_text, 60, 40, text_params);
+            draw_text_ex(&score_text, 60, 40, font, 50000., WHITE);
         }
-        draw_text_ex(&lives_text, screen_width() - 60, 40, text_params);
+        draw_text_ex(&lives_text, screen_width() - 60, 40, font, 50000., WHITE);
         next_frame()?;
     }
 }

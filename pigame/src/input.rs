@@ -1,5 +1,4 @@
 use crate::error::Result;
-use log::info;
 use rppal::gpio::Gpio;
 use std::ops::Index;
 use strum::EnumCount;
@@ -11,12 +10,10 @@ use strum::VariantArray;
 ///
 /// If the GPIO pin cannot be accessed, an error is returned.
 pub fn is_active(input: Input) -> Result<bool> {
-    let is_high = Gpio::new()?
+    Ok(Gpio::new()?
         .get(Input::GPIO_MAP[input as usize])?
         .into_input_pulldown()
-        .is_high();
-    info!("Input {:?} is {}", input, if is_high { "active" } else { "inactive" });
-    Ok(is_high)
+        .is_high())
 }
 
 macro_rules! impl_input {
