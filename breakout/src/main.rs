@@ -1,6 +1,7 @@
 #![allow(clippy::cast_precision_loss)]
 
 use anyhow::Result;
+use env_logger::init;
 use pigame::graphics::text::{draw_text_ex, load_ttf_font, Properties};
 use pigame::graphics::{
     clear_background, draw_rectangle, get_frame_time, get_time, next_frame, screen_height,
@@ -55,8 +56,8 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self) {
-        let x_move = match (is_active(Input::Left), is_active(Input::Right)) {
+    pub fn update(&mut self) -> Result<()> {
+        let x_move = match (is_active(Input::Left)?, is_active(Input::Right)?) {
             (true, false) => -1.,
             (false, true) => 1.,
             _ => 0.,
@@ -64,6 +65,7 @@ impl Player {
         self.target.x += x_move * PLAYER_SPEED * get_frame_time().as_secs_f32();
         self.target.x = self.target.x.clamp(0., screen_width() as f32 - self.rect.w);
         self.rect.x = (self.rect.x + self.target.x) / 2.;
+        Ok(())
     }
 
     pub fn draw(&self) {
@@ -220,6 +222,7 @@ fn init_blocks(blocks: &mut Vec<Block>) {
 
 #[allow(clippy::too_many_lines)]
 fn main() -> Result<()> {
+    init();
     let font = load_ttf_font(
         "res/Quinque Five Font.ttf",
         FontSettings {
@@ -242,7 +245,7 @@ fn main() -> Result<()> {
 
     loop {
         if !player.dead {
-            player.update();
+            player.update()?;
         }
 
         if player_lives == 4 {
@@ -308,9 +311,7 @@ fn main() -> Result<()> {
                 }
             }
         }
-
         clear_background(BLACK);
-
         if !player.dead {
             blocks.retain(|block| block.lives > 0);
             player.draw();
@@ -318,7 +319,7 @@ fn main() -> Result<()> {
         for block in &blocks {
             block.draw();
         }
-        if is_active(Input::A) && !ball_spawned {
+        if is_active(Input::A)? && !ball_spawned {
             ball_spawned = true;
             already_hit_lower_wall = false;
             ball = Ball::new(vec2(player.rect.x, screen_height() as f32 / 2.));

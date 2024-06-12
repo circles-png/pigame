@@ -5,11 +5,15 @@ use once_cell::sync::Lazy;
 
 use crate::{
     error::Result,
-    graphics::{colour::BLACK, FrameBuffer},
+    graphics::FrameBuffer,
 };
 
-static mut CONTEXT: Lazy<Context> = Lazy::new(|| unsafe { Context::new().unwrap_unchecked() });
-
+#[allow(clippy::unwrap_used)]
+static mut CONTEXT: Lazy<Context> = Lazy::new(|| {
+    Context::new()
+        .inspect_err(|error| eprintln!("{error}"))
+        .unwrap()
+});
 
 pub(crate) struct Context {
     pub(crate) frame_buffer: FrameBuffer,
@@ -26,14 +30,6 @@ impl Context {
             fonts: Vec::new(),
             last_frame: Instant::now(),
         })
-    }
-}
-
-impl Drop for Context {
-    fn drop(&mut self) {
-        self.frame_buffer.draw_bitmap(
-            &[BLACK.into()].repeat((self.frame_buffer.fixed_info.smem_len / 4) as usize),
-        );
     }
 }
 

@@ -1,17 +1,26 @@
+use crate::error::Result;
+use log::info;
+use rppal::gpio::Gpio;
 use std::ops::Index;
+use strum::EnumCount;
 use strum::VariantArray;
 
-use rust_gpiozero::Button;
-use strum::EnumCount;
+/// Return true if the input is active.
+///
+/// # Errors
+///
+/// If the GPIO pin cannot be accessed, an error is returned.
+pub fn is_active(input: Input) -> Result<bool> {
+    let is_high = Gpio::new()?
+        .get(Input::GPIO_MAP[input as usize])?
+        .into_input_pulldown()
+        .is_high();
+    info!("Input {:?} is {}", input, if is_high { "active" } else { "inactive" });
+    Ok(is_high)
+}
 
 macro_rules! impl_input {
     ($($name:ident => $pin:expr,)*) => {
-        /// Return true if the input is active.
-        #[must_use]
-        pub fn is_active(input: Input) -> bool {
-            Button::new_with_pulldown(Input::GPIO_MAP[input]).is_active()
-        }
-
         /// Return the first active input.
         #[allow(missing_docs)]
         #[derive(Debug, EnumCount, VariantArray, Copy, Clone)]

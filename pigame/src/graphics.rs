@@ -7,8 +7,8 @@ use crate::context::get;
 use crate::error::{Error, Result};
 use libc::__errno_location;
 use libc::ioctl;
+use log::info;
 use memmap::MmapOptions;
-use std::ffi::c_uint;
 use std::fs::File;
 use std::mem::zeroed;
 use std::time::{Duration, Instant};
@@ -16,7 +16,6 @@ use std::time::{Duration, Instant};
 use memmap::MmapMut;
 use std::fs::OpenOptions;
 use std::os::fd::AsRawFd;
-use std::os::fd::IntoRawFd;
 
 use self::colour::Colour;
 
@@ -33,12 +32,6 @@ pub(crate) enum IoctlRequest {
     FbiogetVscreeninfo = 0x4600,
     FbiogetFscreeninfo = 0x4602,
     FbioWaitforvsync = 0x4004_4620,
-    Kdsetmode = 0x4B3A,
-}
-
-#[repr(u8)]
-pub(crate) enum KdMode {
-    KdGraphics = 0x01,
 }
 
 #[repr(C)]
@@ -105,12 +98,14 @@ pub(crate) struct FixScreeninfo {
 
 impl FrameBuffer {
     pub(crate) fn new() -> Result<Self> {
+        info!("opening framebuffer device");
         let file = OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
             .truncate(true)
             .open("/dev/fb0")?;
+        info!("getting framebuffer information (fixed)");
         let mut fixed_info: FixScreeninfo = unsafe { zeroed() };
         if unsafe {
             ioctl(
@@ -122,6 +117,7 @@ impl FrameBuffer {
         {
             return Err(Error::Ioctl(unsafe { *__errno_location() }));
         };
+        info!("getting framebuffer information (variable)");
         let mut variable_info: VarScreeninfo = unsafe { zeroed() };
         if unsafe {
             ioctl(
@@ -133,16 +129,8 @@ impl FrameBuffer {
         {
             return Err(Error::Ioctl(unsafe { *__errno_location() }));
         }
-        if unsafe {
-            ioctl(
-                File::create("/dev/tty1")?.into_raw_fd(),
-                IoctlRequest::Kdsetmode as _,
-                KdMode::KdGraphics as c_uint,
-            )
-        } == -1
-        {
-            return Err(Error::Ioctl(unsafe { *__errno_location() }));
-        }
+        info!("\n{:#?}\n{:#?}", fixed_info, variable_info);
+        info!("mapping framebuffer");
         let map = unsafe {
             MmapOptions::new()
                 .len(fixed_info.smem_len as usize)
@@ -204,7 +192,7 @@ pub fn draw_rectangle(x: u32, y: u32, w: u32, h: u32, colour: Colour) {
     let frame_buffer = &mut get().frame_buffer;
     for x in x..x + w {
         for y in y..y + h {
-            let start = (y * (frame_buffer.variable_info.xres + 10) + x) as usize * 4;
+            let start = (y * (frame_buffer.variable_info.xres) + x) as usize * 4;
             let Some(slice) = frame_buffer.buffer.get_mut(start..start + 4) else {
                 break;
             };
@@ -216,8 +204,8 @@ pub fn draw_rectangle(x: u32, y: u32, w: u32, h: u32, colour: Colour) {
 /// Clear the screen to a colour.
 pub fn clear_background(colour: Colour) {
     let frame_buffer = &mut get().frame_buffer;
-    frame_buffer
-        .draw_bitmap(&[colour.into()].repeat((frame_buffer.fixed_info.smem_len / 4) as usize));
+    let src = &vec![colour.to_bgra_bytes(); frame_buffer.buffer.len() / 4].into_flattened();
+    frame_buffer.buffer.copy_from_slice(src);
 }
 
 /// Get the time since the program started.
@@ -231,7 +219,6 @@ pub fn get_time() -> f64 {
 /// # Errors
 ///
 /// If the `ioctl` call fails when waiting for the next frame, an error is returned.
-#[allow(clippy::significant_drop_tightening)]
 pub fn next_frame() -> Result<()> {
     let context = get();
     context.last_frame = Instant::now();

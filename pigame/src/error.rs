@@ -1,6 +1,7 @@
 use std::{ffi::CStr, io, result};
 
 use libc::strerror;
+use rppal::gpio;
 use thiserror::Error;
 
 /// Main error type.
@@ -16,7 +17,6 @@ pub enum Error {
     #[error(
         "error while calling ioctl: {:?}",
         unsafe {
-            #[allow(clippy::cast_possible_truncation)]
             CStr::from_ptr(strerror(*.0)).to_str()
         }
     )]
@@ -24,6 +24,9 @@ pub enum Error {
     /// Error while loading font.
     #[error("error while loading font: {0}")]
     Font(&'static str),
+    /// Error from the `rppal` crate.
+    #[error("error from rppal: {0}")]
+    Rppal(#[from] gpio::Error),
 }
 
 /// Main result type.
